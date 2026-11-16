@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оплата замовлення №{{ order.id }} - ФармаПлюс</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121417 !important;
+            color: #ffffff !important;
+        }
+        .payment-card {
+            background-color: #1e2227 !important;
+            border: 1px solid #2d3239 !important;
+            border-radius: 1rem;
+        }
+        .form-control {
+            background-color: #0f1114 !important;
+            color: #ffffff !important;
+            border: 1px solid #343a40 !important;
+        }
+        .form-control:focus {
+            background-color: #0f1114 !important;
+            color: #ffffff !important;
+            border-color: #0d6efd !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .form-control::placeholder {
+            color: #6c757d !important;
+        }
+        .card-preview {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            
+            <!-- Візуальна картка-прев'ю -->
+            <div class="card-preview mb-4 text-start">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="fw-bold fs-5">💳 ФармаПлюс Pay</span>
+                    <span class="fs-4">VISA / MasterCard</span>
+                </div>
+                <div class="fs-4 fw-bold tracking-wide mb-3" id="preview-number">•••• •••• •••• ••••</div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-uppercase small text-white-50" style="font-size: 0.75rem;">Дійсна до</div>
+                        <div class="fw-bold" id="preview-date">MM/YY</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="text-uppercase small text-white-50" style="font-size: 0.75rem;">Сума до сплати</div>
+                        <div class="fw-bold fs-5">{{ order.total_price }} грн</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Форма введення -->
+            <div class="card payment-card shadow-lg">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <h4 class="fw-bold mb-1 text-white">Оплата замовлення #{{ order.id }}</h4>
+                        <p class="text-white-50 small">Введіть реквізити вашої картки</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-white fw-semibold small">Номер картки</label>
+                            <input type="text" id="input-number" class="form-control form-control-lg" placeholder="4441 2222 3333 4444" maxlength="19" required autocomplete="off">
+                        </div>
+
+                        <div class="row g-3 mb-4 text-start">
+                            <div class="col-6">
+                                <label class="form-label text-white fw-semibold small">Термін дії</label>
+                                <input type="text" id="input-date" class="form-control form-control-lg" placeholder="12/28" maxlength="5" required autocomplete="off">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-white fw-semibold small">CVV / CVC</label>
+                                <input type="password" class="form-control form-control-lg" placeholder="***" maxlength="3" required autocomplete="off">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100 fw-bold shadow-sm py-3">
+                            🔒 Сплатити {{ order.total_price }} грн
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Живе оновлення прев'ю картки
+    const numInput = document.getElementById('input-number');
+    const dateInput = document.getElementById('input-date');
+    const previewNum = document.getElementById('preview-number');
+    const previewDate = document.getElementById('preview-date');
+
+    numInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '');
+        val = val.replace(/(.{4})/g, '$1 ').trim();
+        e.target.value = val;
+        previewNum.textContent = val || '•••• •••• •••• ••••';
+    });
+
+    dateInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val.length >= 2) {
+            val = val.substring(0, 2) + '/' + val.substring(2, 4);
+        }
+        e.target.value = val;
+        previewDate.textContent = val || 'MM/YY';
+    });
+</script>
+
+</body>
+</html>

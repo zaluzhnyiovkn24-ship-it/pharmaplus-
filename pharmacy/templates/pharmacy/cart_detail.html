@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Кошик - ФармаПлюс</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body.bg-dark .card {
+            background-color: #2b3035 !important;
+            color: #ffffff !important;
+        }
+        body.bg-dark .table {
+            color: #ffffff !important;
+            --bs-table-color: #ffffff;
+            --bs-table-bg: #2b3035;
+        }
+        body.bg-dark .table thead tr th {
+            background-color: #212529 !important;
+            color: #ffffff !important;
+            border-bottom: 2px solid #495057 !important;
+        }
+        body.bg-dark .table td {
+            color: #ffffff !important;
+            border-color: #495057 !important;
+        }
+        body.bg-dark .card-footer {
+            background-color: #2b3035 !important;
+            border-top: 1px solid #495057 !important;
+        }
+    </style>
+</head>
+<body id="app-body" class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">💊 ФармаПлюс</a>
+        <div class="d-flex align-items-center gap-2">
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="btn btn-outline-light">👤 {{ user.username }}</a>
+                <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">Вийти</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-outline-light me-1">Вхід</a>
+                <a href="{% url 'register' %}" class="btn btn-light me-2">Реєстрація</a>
+            {% endif %}
+            <button id="theme-toggle" class="btn btn-outline-light me-2" onclick="toggleTheme()">🌙 Темна</button>
+            <a href="/" class="btn btn-outline-light">🏠 На головну</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <h2 class="mb-4">Ваш кошик</h2>
+
+    {% if cart_items %}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Товар</th>
+                                <th scope="col">Ціна</th>
+                                <th scope="col" style="width: 160px;">Кількість</th>
+                                <th scope="col">Сума</th>
+                                <th scope="col" class="text-end">Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                                <tr>
+                                    <td class="fw-bold">{{ item.product.name }}</td>
+                                    <td>{{ item.product.price }} грн</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'cart_decrement' item.product.id %}" class="btn btn-outline-secondary fw-bold">-</a>
+                                            <span class="btn btn-light disabled text-dark px-3 fw-bold">{{ item.quantity }}</span>
+                                            <a href="{% url 'cart_add' item.product.id %}" class="btn btn-outline-secondary fw-bold">+</a>
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold text-primary">{{ item.item_total }} грн</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'cart_remove' item.product.id %}" class="btn btn-outline-danger btn-sm">Видалити</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center p-3 border-0">
+                <div>
+                    <a href="/" class="btn btn-outline-secondary">← Продовжити покупки</a>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <h4 class="mb-0">Загалом: <span class="text-primary fw-bold">{{ total_price }} грн</span></h4>
+                    <a href="{% url 'checkout' %}" class="btn btn-success btn-lg">Перейти до оформлення</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info shadow-sm">
+            Ваш кошик порожній. <a href="/" class="alert-link">Перейти до товарів</a>
+        </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function applyTheme(theme) {
+        const body = document.getElementById('app-body');
+        const btn = document.getElementById('theme-toggle');
+        if (theme === 'dark') {
+            body.classList.remove('bg-light');
+            body.classList.add('bg-dark', 'text-white');
+            if (btn) btn.innerHTML = '☀️ Світла';
+        } else {
+            body.classList.remove('bg-dark', 'text-white');
+            body.classList.add('bg-light');
+            if (btn) btn.innerHTML = '🌙 Темна';
+        }
+    }
+
+    function toggleTheme() {
+        const currentTheme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('theme', currentTheme);
+        applyTheme(currentTheme);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        applyTheme(savedTheme);
+    });
+</script>
+</body>
+</html>

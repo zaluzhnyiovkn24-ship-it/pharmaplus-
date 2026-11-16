@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформлення замовлення</title>
+    <!-- Підключаємо Bootstrap безпосередньо сюди -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #1a1d20; color: #fff; font-family: system-ui, -apple-system, sans-serif; }
+        .checkout-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .checkout-card { background-color: #212529; border: 1px solid #373b3e; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .custom-input { background-color: #2b3035 !important; border: 1px solid #495057 !important; color: #fff !important; border-radius: 8px; }
+        .custom-input:focus { border-color: #198754 !important; box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25) !important; }
+        .custom-input::placeholder { color: #6c757d; }
+        .card-details { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #495057; }
+    </style>
+</head>
+<body>
+
+<div class="container checkout-wrapper py-5">
+    <div class="checkout-card p-4 p-md-5 text-white w-100" style="max-width: 500px; margin: 0 auto;">
+        
+        <div class="text-center mb-4">
+            <span style="font-size: 3rem; line-height: 1; display: block; margin-bottom: 10px;">📦</span>
+            <h2 class="fw-bold mt-2 mb-1 text-white">Оформлення замовлення</h2>
+            <p class="text-muted small mb-0">Введіть ваші дані для швидкої доставки</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'checkout' %}">
+            {% csrf_token %}
+            
+            <div class="mb-3 text-start">
+                <label class="form-label text-light mb-1">📞 Номер телефону</label>
+                <input type="text" name="phone" class="form-control custom-input py-2" placeholder="+380..." required>
+            </div>
+
+            <div class="mb-3 text-start">
+                <label class="form-label text-light mb-1">📍 Адреса доставки (або Нова Пошта)</label>
+                <textarea name="address" class="form-control custom-input py-2" rows="2" placeholder="Місто, вулиця / № відділення" required></textarea>
+            </div>
+{% if has_prescription %}
+        <div class="mb-3 text-start p-3 rounded border border-danger" style="background-color: rgba(220, 53, 69, 0.1);">
+            <label for="prescription_number" class="form-label text-danger fw-bold mb-1">
+                📋 Номер електронного рецепта (обов'язково)
+            </label>
+            <input type="text"
+                   id="prescription_number"
+                   name="prescription_number"
+                   class="form-control custom-input py-2"
+                   placeholder="Наприклад: 1234-5678-9012-3456"
+                   required>
+            <small class="text-light" style="opacity: 0.8;">У вашому кошику є рецептурний препарат. Без номера рецепта оплата недоступна.</small>
+        </div>
+    {% endif %}
+    
+            <div class="mb-4 text-start">
+                <label class="form-label text-light mb-1">💳 Спосіб оплати</label>
+                <select name="payment_method" id="paymentMethod" class="form-select custom-input py-2">
+                    <option value="cash">💵 Готівкою при отриманні</option>
+                    <option value="card">💳 Карткою на сайті</option>
+                </select>
+            </div>
+
+            <div id="cardDetails" class="card-details mb-4 text-start">
+                <h6 class="text-success mb-3">Дані банківської картки</h6>
+                
+                <div class="mb-3">
+                    <label class="form-label text-light small mb-1">Номер картки</label>
+                    <input type="text" name="card_number" id="cardNumber" class="form-control custom-input" placeholder="0000 0000 0000 0000" maxlength="19">
+                </div>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <label class="form-label text-light small mb-1">Термін дії</label>
+                        <input type="text" name="expiry" class="form-control custom-input" placeholder="ММ/РР" maxlength="5">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label text-light small mb-1">CVV</label>
+                        <input type="password" name="cvv" class="form-control custom-input" placeholder="***" maxlength="3">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 py-2 fw-bold fs-5 mb-3 rounded-3 shadow-sm d-block">
+                ✅ Підтвердити та оформити
+            </button>
+            
+            <a href="{% url 'cart_detail' %}" class="btn btn-dark border-secondary w-100 py-2 rounded-3 text-secondary text-decoration-none d-block text-center">
+                Скасувати
+            </a>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const paymentSelect = document.getElementById("paymentMethod");
+        const cardDetails = document.getElementById("cardDetails");
+        const cardNumberInput = document.getElementById("cardNumber");
+
+        paymentSelect.addEventListener("change", function() {
+            if (this.value === "card") {
+                cardDetails.style.display = "block";
+                cardNumberInput.setAttribute("required", "required");
+            } else {
+                cardDetails.style.display = "none";
+                cardNumberInput.removeAttribute("required");
+            }
+        });
+
+        cardNumberInput.addEventListener("input", function(e) {
+            let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            let formattedValue = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) formattedValue += ' ';
+                formattedValue += value[i];
+            }
+            e.target.value = formattedValue;
+        });
+    });
+</script>
+
+</body>
+</html>
