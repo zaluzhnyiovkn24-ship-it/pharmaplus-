@@ -35,7 +35,6 @@ ALLOWED_HOSTS = [
     host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").split(",")
     if host.strip()
 ]
-CSRF_TRUSTED_ORIGINS = ['https://*.devtunnels.ms', 'https://*.ngrok-free.app']
 
 # Application definition
 
@@ -140,6 +139,5 @@ MAILERS = {
 }
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-LOGIN_URL = 'register'
-LOGIN_URL = 'register'
+LOGIN_URL = 'login'
 CSRF_USE_SESSIONS = True

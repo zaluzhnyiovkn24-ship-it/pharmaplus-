@@ -81,6 +81,9 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
+            target = request.GET.get('next', '')
+            if url_has_allowed_host_and_scheme(target, {request.get_host()}, require_https=request.is_secure()):
+                return redirect(target)
             return redirect('product_list')
     else:
         form = AuthenticationForm()
