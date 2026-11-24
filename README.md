@@ -36,3 +36,7 @@ python manage.py runserver
 ## Перевірка
 
 Виконайте `python manage.py test` у віртуальному середовищі з установленим ключем. Для поіменного протоколу використовуйте `python manage.py test --verbosity 2`. Django створить окрему тестову базу SQLite. Відповідні тести містяться у `pharmacy/tests.py`.
+
+## Коміти перевіреної версії
+
+Поряд із вихідними файлами в архіві є coursework.bundle. Він містить гілку coursework із виправленнями поверх початкового коміту c795e68 репозиторію pharmaplus-. У вже клонованому початковому репозиторії імпортуйте гілку командою `git fetch "/шлях/до/coursework.bundle" refs/heads/coursework:refs/heads/coursework`, далі виконайте `git switch coursework`. Для звичайного запуску достатньо розпакованих вихідних файлів.
