@@ -2,14 +2,11 @@ from django.core.management.base import BaseCommand
 from pharmacy.models import Category, Product
 
 class Command(BaseCommand):
-    help = 'Заповнення бази великим асортиментом з актуальними цінами'
+    help = 'Додати демонстраційні товари зі зразковими цінами'
 
     def handle(self, *args, **kwargs):
-        Product.objects.all().delete()
-        Category.objects.all().delete()
 
-        # Надійна темна картинка-заглушка
-        placeholder = 'https://placehold.co/600x400/2b3035/a3a8ad?text=No+Photo'
+        placeholder = ''
 
         data = {
             'Знеболювальні та протизапальні': [
@@ -139,18 +136,17 @@ class Command(BaseCommand):
         }
 
         created_count = 0
-
         for cat_name, products in data.items():
-            category = Category.objects.create(name=cat_name)
-            for prod in products:
-                Product.objects.create(
-                    category=category,
-                    name=prod['name'],
-                    description=prod['description'],
-                    price=prod['price'],
-                    stock=prod['stock'],
-                    image_url=prod['image_url']
+            category, _ = Category.objects.get_or_create(name=cat_name)
+            for product in products:
+                note = product["description"].lower()
+                prescription = "тільки за рецептом" in note or "виключно за" in note or cat_name == "Антибіотики"
+                _, created = Product.objects.get_or_create(
+                    category=category, name=product["name"], defaults={
+                        "price": product["price"], "stock": product["stock"],
+                        "description": "Позиція демонстраційного каталогу. Приклад для оформлення навчального замовлення.",
+                        "is_prescription": prescription, "image_url": product["image_url"],
+                    },
                 )
-                created_count += 1
-
-        self.stdout.write(self.style.SUCCESS(f'Асортимент успішно оновлено! Додано {created_count} товарів у {len(data)} категоріях.'))
+                created_count += int(created)
+        self.stdout.write(self.style.SUCCESS(f"Додано позицій: {created_count}."))
